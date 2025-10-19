@@ -54,9 +54,6 @@ public class UserServiceImpl implements UserService {
             return ResponseEntity.badRequest().body(new RegisterResult(false, "用户名已存在"));
         }
 
-        // 加密密码
-
-
         User user = new User(null, username, passwordEncoder.encode(password));
         userMapper.insert(user);
         return ResponseEntity.ok(new RegisterResult(true, "注册成功"));
