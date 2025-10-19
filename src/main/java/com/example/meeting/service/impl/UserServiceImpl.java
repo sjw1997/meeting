@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseEntity<LoginResult> login(LoginRequest request) {
         if (request == null) {
-            return ResponseEntity.badRequest().body(new LoginResult(false, "请填写完整的登录信息"));
+            return ResponseEntity.badRequest().body(new LoginResult(false, "请填写完整的登录信息", null));
         }
 
         String username = request.getUsername();
@@ -74,7 +74,7 @@ public class UserServiceImpl implements UserService {
         User user = userMapper.selectOne(queryWrapper);
 
         if (user == null) {
-            return ResponseEntity.badRequest().body(new LoginResult(false, "用户名不存在"));
+            return ResponseEntity.badRequest().body(new LoginResult(false, "用户名不存在", null));
         }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return ResponseEntity.badRequest().body(new LoginResult(false, "密码错误", null));
