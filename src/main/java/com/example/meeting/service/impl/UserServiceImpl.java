@@ -1,10 +1,7 @@
 package com.example.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.example.meeting.DTO.LoginRequest;
-import com.example.meeting.DTO.LoginResult;
-import com.example.meeting.DTO.RegisterRequest;
-import com.example.meeting.DTO.RegisterResult;
+import com.example.meeting.DTO.*;
 import com.example.meeting.entity.User;
 import com.example.meeting.mapper.UserMapper;
 import com.example.meeting.config.JwtUtil;
@@ -54,7 +51,7 @@ public class UserServiceImpl implements UserService {
             return ResponseEntity.badRequest().body(new RegisterResult(false, "用户名已存在"));
         }
 
-        User user = new User(null, username, passwordEncoder.encode(password));
+        User user = new User(null, username, passwordEncoder.encode(password), false);
         userMapper.insert(user);
         return ResponseEntity.ok(new RegisterResult(true, "注册成功"));
     }
@@ -80,5 +77,19 @@ public class UserServiceImpl implements UserService {
         // 生成JWT token
         String token = jwtUtil.generateToken(user.getId().toString());
         return ResponseEntity.ok(new LoginResult(true, "登录成功", token));
+    }
+
+    @Override
+    public ResponseEntity<VerifyTokenResult> verifyToken(String token) {
+        if (!jwtUtil.validateToken(token)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        Integer userId = jwtUtil.getUserIdFromToken(token);
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(new VerifyTokenResult(true, user.getUsername(), user.getId().toString(), user.getIsAdmin()));
     }
 }

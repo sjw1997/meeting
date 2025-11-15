@@ -2,7 +2,6 @@ package com.example.meeting.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
@@ -15,33 +14,48 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final SecretKey secretKey = Keys.hmacShaKeyFor("sdkjfhkjewrhwkjhsdfhkjhsakfjhkjshkejrhkjwhrkjehwkjhfkjshdkjfhjklehrkjlwarewsdsdfsdferwrewsfsfsafderw".getBytes());
     private static final long JWT_TOKEN_VALIDITY = 24 * 60 * 60; // 24小时
 
     // 从token中获取用户名
-    public String getUsernameFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+    public Integer getUserIdFromToken(String token) {
+        return Integer.parseInt(getClaimFromToken(token, Claims::getSubject));
     }
 
     // 从token中获取过期时间
     public Date getExpirationDateFromToken(String token) {
-        return getClaimFromToken(token, Claims::getExpiration);
+        try {
+            return getClaimFromToken(token, Claims::getExpiration);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = getAllClaimsFromToken(token);
-        return claimsResolver.apply(claims);
+        try {
+            final Claims claims = getAllClaimsFromToken(token);
+            return claimsResolver.apply(claims);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     // 解析token中的所有声明
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
+        try {
+            return Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token).getBody();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     // 检查token是否过期
     private Boolean isTokenExpired(String token) {
-        final Date expiration = getExpirationDateFromToken(token);
-        return expiration.before(new Date());
+        try {
+            return getExpirationDateFromToken(token).before(new Date());
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     // 生成token
@@ -62,8 +76,7 @@ public class JwtUtil {
     }
 
     // 验证token
-    public Boolean validateToken(String token, String username) {
-        final String tokenUsername = getUsernameFromToken(token);
-        return (tokenUsername.equals(username) && !isTokenExpired(token));
+    public Boolean validateToken(String token) {
+        return !isTokenExpired(token) && getAllClaimsFromToken(token) != null;
     }
 }
