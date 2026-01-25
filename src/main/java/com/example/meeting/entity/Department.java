@@ -8,11 +8,9 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-@TableName("user")
-public class User {
+@TableName("department")
+public class Department {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String username;
-    private String password;
-    private Boolean isAdmin;
+    private String name;
 }

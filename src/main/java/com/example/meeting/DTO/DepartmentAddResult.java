@@ -5,9 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class VerifyTokenResult {
+public class DepartmentAddResult {
     private Boolean success;
-    private Long userId;
-    private String username;
-    private Boolean isAdmin;
+    private String message;
 }

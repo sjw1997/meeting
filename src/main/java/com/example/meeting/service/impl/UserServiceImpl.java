@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
             return ResponseEntity.badRequest().body(new RegisterResult(false, "用户名已存在"));
         }
 
-        User user = new User(null, username, passwordEncoder.encode(password));
+        User user = new User(null, username, passwordEncoder.encode(password), false);
         userMapper.insert(user);
         return ResponseEntity.ok(new RegisterResult(true, "注册成功"));
     }
@@ -82,18 +82,18 @@ public class UserServiceImpl implements UserService {
     @Override
      public ResponseEntity<VerifyTokenResult> verifyToken(String token) {
         if (token == null || token.isEmpty()) {
-            return ResponseEntity.badRequest().body(new VerifyTokenResult(false, null, null));
+            return ResponseEntity.badRequest().body(new VerifyTokenResult(false, null, null, null));
         }
 
         if (!jwtUtil.validateToken(token)) {
-            return ResponseEntity.badRequest().body(new VerifyTokenResult(false, null, null));
+            return ResponseEntity.badRequest().body(new VerifyTokenResult(false, null, null, null));
         }
 
         Long userId = Long.valueOf(jwtUtil.getUserIdFromToken(token));
         User user = userMapper.selectById(userId);
         if (user == null) {
-            return ResponseEntity.badRequest().body(new VerifyTokenResult(false, null, null));
+            return ResponseEntity.badRequest().body(new VerifyTokenResult(false, null, null, null));
         }
-         return ResponseEntity.ok(new VerifyTokenResult(true, userId, user.getUsername()));
+         return ResponseEntity.ok(new VerifyTokenResult(true, userId, user.getUsername(), user.getIsAdmin()));
      }
 }
