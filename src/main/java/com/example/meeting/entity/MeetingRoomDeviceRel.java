@@ -5,17 +5,13 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@TableName("meeting_room")
-public class MeetingRoom {
+@TableName("meeting_room_device_rel")
+public class MeetingRoomDeviceRel {
     @TableId(type = IdType.AUTO)
     private Long id;
-    private String name;
-    private String number;
-    private String location;
-    private Long capacity;
+    private Long roomId;
+    private Long deviceId;
 }
