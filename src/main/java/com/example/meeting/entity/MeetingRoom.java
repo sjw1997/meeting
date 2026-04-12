@@ -18,4 +18,5 @@ public class MeetingRoom {
     private String number;
     private String location;
     private Long capacity;
+    private Boolean available;
 }

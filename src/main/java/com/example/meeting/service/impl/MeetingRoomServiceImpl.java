@@ -104,7 +104,7 @@ public class MeetingRoomServiceImpl implements MeetingRoomService {
         }
 
         try {
-            MeetingRoom meetingRoom = new MeetingRoom(null, name, number, location, capacity);
+            MeetingRoom meetingRoom = new MeetingRoom(null, name, number, location, capacity, true);
             meetingRoomMapper.insert(meetingRoom);
 
             Long meetingRoomId = meetingRoom.getId();
@@ -276,5 +276,27 @@ public class MeetingRoomServiceImpl implements MeetingRoomService {
         }
 
         return ResponseEntity.ok(new MeetingRoomGetResult(true, "获取会议室成功", meetingRoomFullDTOS));
+    }
+
+    @Override
+    public ResponseEntity<MeetingRoomForbiddenResult> forbidMeetingRoom(Long id) {
+        MeetingRoom meetingRoom = meetingRoomMapper.selectById(id);
+        if (meetingRoom == null) {
+            return ResponseEntity.badRequest().body(new MeetingRoomForbiddenResult(false, "选择的会议室不存在"));
+        }
+        meetingRoom.setAvailable(false);
+        meetingRoomMapper.updateById(meetingRoom);
+        return ResponseEntity.ok(new MeetingRoomForbiddenResult(true, "禁用成功"));
+    }
+
+    @Override
+    public ResponseEntity<MeetingRoomEnableResult> enableMeetingRoom(Long id) {
+        MeetingRoom meetingRoom = meetingRoomMapper.selectById(id);
+        if (meetingRoom == null) {
+            return ResponseEntity.badRequest().body(new MeetingRoomEnableResult(false, "选择的会议室不存在"));
+        }
+        meetingRoom.setAvailable(true);
+        meetingRoomMapper.updateById(meetingRoom);
+        return ResponseEntity.ok(new MeetingRoomEnableResult(true, "启用成功"));
     }
 }

@@ -31,4 +31,14 @@ public class MeetingRoomController {
     public ResponseEntity<MeetingRoomDeleteResult> deleteMeetingRoom(@PathVariable Long id) {
         return meetingRoomService.deleteMeetingRoom(id);
     }
+
+    @PostMapping("/meeting_room/forbid/{id}")
+    public ResponseEntity<MeetingRoomForbiddenResult> forbidMeetingRoom(@PathVariable Long id) {
+        return meetingRoomService.forbidMeetingRoom(id);
+    }
+
+    @PostMapping("/meeting_room/enable/{id}")
+    public ResponseEntity<MeetingRoomEnableResult> enableMeetingRoom(@PathVariable Long id) {
+        return meetingRoomService.enableMeetingRoom(id);
+    }
 }

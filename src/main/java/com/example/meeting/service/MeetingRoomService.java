@@ -8,4 +8,6 @@ public interface MeetingRoomService {
     ResponseEntity<MeetingRoomDeleteResult> deleteMeetingRoom(Long id);
     ResponseEntity<MeetingRoomUpdateResult> updateMeetingRoom(MeetingRoomUpdateRequest request);
     ResponseEntity<MeetingRoomGetResult> getMeetingRoom();
+    ResponseEntity<MeetingRoomForbiddenResult> forbidMeetingRoom(Long id);
+    ResponseEntity<MeetingRoomEnableResult> enableMeetingRoom(Long id);
 }

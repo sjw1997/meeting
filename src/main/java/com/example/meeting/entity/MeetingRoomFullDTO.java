@@ -10,11 +10,12 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class MeetingRoomFullDTO extends MeetingRoom {
+    private Boolean isFree = true;
     private List<Long> deviceIds;
     private List<Long> departmentIds;
 
     public MeetingRoomFullDTO(MeetingRoom meetingRoom, List<Long> deviceIds, List<Long> departmentIds) {
-        super(meetingRoom.getId(), meetingRoom.getName(), meetingRoom.getNumber(), meetingRoom.getLocation(), meetingRoom.getCapacity());
+        super(meetingRoom.getId(), meetingRoom.getName(), meetingRoom.getNumber(), meetingRoom.getLocation(), meetingRoom.getCapacity(), meetingRoom.getAvailable());
         this.deviceIds = deviceIds;
         this.departmentIds = departmentIds;
     }
