@@ -3,7 +3,9 @@ package com.example.meeting.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.meeting.DTO.*;
 import com.example.meeting.entity.Device;
+import com.example.meeting.entity.MeetingRoomDeviceRel;
 import com.example.meeting.mapper.DeviceMapper;
+import com.example.meeting.mapper.MeetingRoomDeviceRelMapper;
 import com.example.meeting.service.DeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,9 @@ public class DeviceServiceImpl implements DeviceService {
 
     @Autowired
     private DeviceMapper deviceMapper;
+
+    @Autowired
+    private MeetingRoomDeviceRelMapper meetingRoomDeviceRelMapper;
 
     @Override
     public ResponseEntity<DeviceAddResult> addDevice(DeviceAddRequest request) {
@@ -47,7 +52,9 @@ public class DeviceServiceImpl implements DeviceService {
         if (device == null) {
             return ResponseEntity.badRequest().body(new DeviceDeleteResult(false, "设备不存在"));
         }
+
         deviceMapper.deleteById(id);
+        meetingRoomDeviceRelMapper.delete(new QueryWrapper<MeetingRoomDeviceRel>().eq("device_id", id));
         return ResponseEntity.ok(new DeviceDeleteResult(true, "删除设备成功"));
     }
 
@@ -69,6 +76,14 @@ public class DeviceServiceImpl implements DeviceService {
         if (name.isEmpty()) {
             return ResponseEntity.badRequest().body(new DeviceUpdateResult(false, "设备名称不能为空"));
         }
+
+        QueryWrapper<Device> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("name", name);
+        Device existingDevice = deviceMapper.selectOne(queryWrapper);
+        if (existingDevice != null) {
+            return ResponseEntity.badRequest().body(new DeviceUpdateResult(false, "设备名称已存在"));
+        }
+
         if (device.getName().equals(name)) {
             return ResponseEntity.ok(new DeviceUpdateResult(true, "更新设备成功"));
         }

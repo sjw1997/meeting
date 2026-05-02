@@ -3,7 +3,9 @@ package com.example.meeting.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.meeting.DTO.*;
 import com.example.meeting.entity.Department;
+import com.example.meeting.entity.MeetingRoomDepartmentRel;
 import com.example.meeting.mapper.DepartmentMapper;
+import com.example.meeting.mapper.MeetingRoomDepartmentRelMapper;
 import com.example.meeting.service.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,9 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Autowired
     private DepartmentMapper departmentMapper;
+
+    @Autowired
+    private MeetingRoomDepartmentRelMapper meetingRoomDepartmentRelMapper;
 
     @Override
     public ResponseEntity<DepartmentAddResult> addDepartment(DepartmentAddRequest request) {
@@ -65,6 +70,13 @@ public class DepartmentServiceImpl implements DepartmentService {
             return ResponseEntity.badRequest().body(new DepartmentUpdateResult(false, "部门名称不能为空"));
         }
 
+        QueryWrapper<Department> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("name", name);
+        Department existingDepartment = departmentMapper.selectOne(queryWrapper);
+        if (existingDepartment != null) {
+            return ResponseEntity.badRequest().body(new DepartmentUpdateResult(false, "部门名称已存在"));
+        }
+
         if (department.getName().equals(name)) {
             return ResponseEntity.ok(new DepartmentUpdateResult(true, "更新部门成功"));
         }
@@ -84,7 +96,9 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (department == null) {
             return ResponseEntity.badRequest().body(new DepartmentDeleteResult(false, "部门不存在"));
         }
+
         departmentMapper.deleteById(id);
+        meetingRoomDepartmentRelMapper.delete(new QueryWrapper<MeetingRoomDepartmentRel>().eq("department_id", id));
         return ResponseEntity.ok(new DepartmentDeleteResult(true, "删除部门成功"));
     }
 }

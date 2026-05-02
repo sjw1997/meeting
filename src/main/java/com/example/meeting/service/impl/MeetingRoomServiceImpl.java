@@ -77,6 +77,12 @@ public class MeetingRoomServiceImpl implements MeetingRoomService {
         if (location.isEmpty()) {
             return ResponseEntity.badRequest().body(new MeetingRoomAddResult(false, "会议室位置不能为空"));
         }
+        QueryWrapper<MeetingRoom> queryWrapper3 = new QueryWrapper<>();
+        queryWrapper3.eq("location", location);
+        MeetingRoom existingMeetingRoom3 = meetingRoomMapper.selectOne(queryWrapper3);
+        if (existingMeetingRoom3 != null) {
+            return ResponseEntity.badRequest().body(new MeetingRoomAddResult(false, "会议室位置已存在"));
+        }
 
         Long capacity = request.getCapacity();
         if (capacity == null) {
