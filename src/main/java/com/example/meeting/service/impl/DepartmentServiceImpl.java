@@ -64,6 +64,13 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (name.isEmpty()) {
             return ResponseEntity.badRequest().body(new DepartmentUpdateResult(false, "部门名称不能为空"));
         }
+        QueryWrapper<Department> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("name", name);
+        Department existingDepartment = departmentMapper.selectOne(queryWrapper);
+        if (existingDepartment != null) {
+            return ResponseEntity.badRequest().body(new DepartmentUpdateResult(false, "部门名称已存在"));
+        }
+
 
         if (department.getName().equals(name)) {
             return ResponseEntity.ok(new DepartmentUpdateResult(true, "更新部门成功"));

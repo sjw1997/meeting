@@ -87,11 +87,10 @@ public class MeetingRoomServiceImpl implements MeetingRoomService {
         }
 
         List<Long> deviceIds = request.getDeviceIds();
-        if (deviceIds == null || deviceIds.isEmpty()) {
-            return ResponseEntity.badRequest().body(new MeetingRoomAddResult(false, "请选择会议室设备"));
+        if (deviceIds == null) {
+            deviceIds = new ArrayList<>();
         }
-
-        if (deviceIds.size() != deviceMapper.selectBatchIds(deviceIds).size()) {
+        if (!deviceIds.isEmpty() && deviceIds.size() != deviceMapper.selectBatchIds(deviceIds).size()) {
             return ResponseEntity.badRequest().body(new MeetingRoomAddResult(false, "选择的设备不存在"));
         }
 
@@ -206,11 +205,11 @@ public class MeetingRoomServiceImpl implements MeetingRoomService {
         }
 
         List<Long> deviceIds = request.getDeviceIds();
-        if (deviceIds == null || deviceIds.isEmpty()) {
-            return ResponseEntity.badRequest().body(new MeetingRoomUpdateResult(false, "请选择会议室设备"));
+        if (deviceIds == null) {
+            deviceIds = new ArrayList<>();
         }
 
-        if (deviceIds.size() != deviceMapper.selectBatchIds(deviceIds).size()) {
+        if (!deviceIds.isEmpty() && deviceIds.size() != deviceMapper.selectBatchIds(deviceIds).size()) {
             return ResponseEntity.badRequest().body(new MeetingRoomUpdateResult(false, "选择的设备不存在"));
         }
 
@@ -268,11 +267,6 @@ public class MeetingRoomServiceImpl implements MeetingRoomService {
             List<Long> departmentIds = meetingRoomDepartmentRelMapper.selectList(queryWrapper1).stream().map(MeetingRoomDepartmentRel::getDepartmentId).toList();
 
             meetingRoomFullDTOS.add(new MeetingRoomFullDTO(meetingRoom, deviceIds, departmentIds));
-        }
-
-
-        for (MeetingRoomFullDTO meetingRoomFullDTO : meetingRoomFullDTOS) {
-            System.out.println(meetingRoomFullDTO);
         }
 
         return ResponseEntity.ok(new MeetingRoomGetResult(true, "获取会议室成功", meetingRoomFullDTOS));

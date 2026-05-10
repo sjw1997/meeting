@@ -69,6 +69,14 @@ public class DeviceServiceImpl implements DeviceService {
         if (name.isEmpty()) {
             return ResponseEntity.badRequest().body(new DeviceUpdateResult(false, "设备名称不能为空"));
         }
+
+        QueryWrapper<Device> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("name", name);
+        Device existingDevice = deviceMapper.selectOne(queryWrapper);
+        if (existingDevice != null) {
+            return ResponseEntity.badRequest().body(new DeviceUpdateResult(false, "设备名称已存在"));
+        }
+
         if (device.getName().equals(name)) {
             return ResponseEntity.ok(new DeviceUpdateResult(true, "更新设备成功"));
         }
