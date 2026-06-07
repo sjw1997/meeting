@@ -28,4 +28,19 @@ public class UserController {
         String token = header.substring(7);
         return userService.verifyToken(token);
     }
+
+    @GetMapping("/user/getUsers")
+    public ResponseEntity<UserGetResult> getUsers() {
+        return userService.getUsers();
+    }
+
+    @PutMapping("/user/update")
+    public ResponseEntity<UserUpdateResult> updateUser(@RequestBody UserUpdateRequest request) {
+        return userService.updateUser(request);
+    }
+
+    @DeleteMapping("/user/delete/{id}")
+    public ResponseEntity<UserDeleteResult> deleteUser(@PathVariable Long id) {
+        return userService.deleteUser(id);
+    }
 }

@@ -3,17 +3,24 @@ package com.example.meeting.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.meeting.DTO.*;
 import com.example.meeting.entity.Department;
+import com.example.meeting.entity.User;
 import com.example.meeting.mapper.DepartmentMapper;
+import com.example.meeting.mapper.UserMapper;
 import com.example.meeting.service.DepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class DepartmentServiceImpl implements DepartmentService {
 
     @Autowired
     private DepartmentMapper departmentMapper;
+
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     public ResponseEntity<DepartmentAddResult> addDepartment(DepartmentAddRequest request) {
@@ -91,6 +98,12 @@ public class DepartmentServiceImpl implements DepartmentService {
         if (department == null) {
             return ResponseEntity.badRequest().body(new DepartmentDeleteResult(false, "部门不存在"));
         }
+
+        List<User> users = userMapper.selectList(new QueryWrapper<User>().eq("department_id", id));
+        if (!users.isEmpty()) {
+            return ResponseEntity.badRequest().body(new DepartmentDeleteResult(false, "部门下有用户，请先删除用户"));
+        }
+
         departmentMapper.deleteById(id);
         return ResponseEntity.ok(new DepartmentDeleteResult(true, "删除部门成功"));
     }

@@ -1,12 +1,12 @@
 package com.example.meeting.DTO;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
-public class RegisterRequest {
-    private String username;
-    private String password;
-    private String confirmPassword;
+@AllArgsConstructor
+public class UserUpdateRequest {
+    private Long id;
     private String name;
     private String workNum;
     private String phoneNum;
