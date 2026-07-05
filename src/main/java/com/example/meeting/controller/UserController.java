@@ -5,6 +5,7 @@ import com.example.meeting.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api")
@@ -42,5 +43,15 @@ public class UserController {
     @DeleteMapping("/user/delete/{id}")
     public ResponseEntity<UserDeleteResult> deleteUser(@PathVariable Long id) {
         return userService.deleteUser(id);
+    }
+
+    @PostMapping("/user/import")
+    public ResponseEntity<UserImportResult> importUser(@RequestParam("file") MultipartFile file) {
+        return userService.importUser(file);
+    }
+
+    @PostMapping("/user/add")
+    public ResponseEntity<UserAddResult> addUser(@RequestBody UserAddRequest request) {
+        return userService.addUser(request);
     }
 }

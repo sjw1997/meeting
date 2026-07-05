@@ -2,18 +2,22 @@ package com.example.meeting.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.example.meeting.DTO.*;
+import com.example.meeting.config.JwtUtil;
 import com.example.meeting.entity.User;
 import com.example.meeting.entity.UserWithoutPassword;
 import com.example.meeting.mapper.DepartmentMapper;
 import com.example.meeting.mapper.UserMapper;
-import com.example.meeting.config.JwtUtil;
 import com.example.meeting.service.UserService;
+import com.example.meeting.service.utils.ExcelUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -29,6 +33,8 @@ public class UserServiceImpl implements UserService {
     
     @Autowired
     private JwtUtil jwtUtil;
+
+    private static final String DEFAULT_PASSWORD = "123456";
 
     @Override
     public ResponseEntity<RegisterResult> register(RegisterRequest request) {
@@ -188,5 +194,127 @@ public class UserServiceImpl implements UserService {
         }
         userMapper.deleteById(id);
         return ResponseEntity.ok(new UserDeleteResult(true, "删除用户成功"));
+    }
+
+    @Override
+    public ResponseEntity<UserImportResult> importUser(MultipartFile file) {
+        List<User> users = ExcelUtils.parseExcel(file);
+        if (users == null) {
+            return ResponseEntity.badRequest().body(new UserImportResult(false, "导入失败"));
+        }
+
+        if (users.isEmpty()) {
+            return ResponseEntity.badRequest().body(new UserImportResult(false, "导入失败，表格无有效数据"));
+        }
+
+        int successCount = 0;
+        int failCount = 0;
+        List<String> errorMessages = new ArrayList<>();
+        for (User user : users) {
+            String name = user.getName();
+            String workNum = user.getWorkNum();
+            String phoneNum = user.getPhoneNum();
+            Long departmentId = user.getDepartmentId();
+
+            if (name == null || name.isEmpty() || workNum == null || workNum.isEmpty() || phoneNum == null || phoneNum.isEmpty() || departmentId == null) {
+                failCount ++ ;
+                errorMessages.add("第" + (successCount + failCount) + "行数据不完整");
+                continue;
+            }
+
+            if (userMapper.exists(new QueryWrapper<User>().eq("work_num", workNum))) {
+                failCount ++ ;
+                errorMessages.add("第" + (successCount + failCount) + "行工号已存在");
+                continue;
+            }
+
+            if (userMapper.exists(new QueryWrapper<User>().eq("phone_num", phoneNum))) {
+                failCount ++ ;
+                errorMessages.add("第" + (successCount + failCount) + "行手机号已存在");
+                continue;
+            }
+
+            if (departmentMapper.selectById(departmentId) == null) {
+                failCount ++ ;
+                errorMessages.add("第" + (successCount + failCount) + "行部门不存在");
+                continue;
+            }
+
+            String username = name;
+            if (userMapper.exists(new QueryWrapper<User>().eq("username", username))) {
+                username = username + "_" + UUID.randomUUID().toString().substring(0, 8);
+            }
+            user.setUsername(username);
+
+            user.setPassword(passwordEncoder.encode(DEFAULT_PASSWORD));
+            userMapper.insert(user);
+            successCount ++ ;
+        }
+
+        boolean success = successCount > 0;
+        String message = "";
+        if (successCount > 0) {
+            message = "成功导入" + successCount + "条数据";
+        }
+        if (failCount > 0) {
+            message += "，失败" + failCount + "条数据";
+            if (!errorMessages.isEmpty()) {
+                message += "，错误信息：" + String.join(";", errorMessages);
+            }
+        }
+        return ResponseEntity.ok(new UserImportResult(success, message));
+    }
+
+    @Override
+    public ResponseEntity<UserAddResult> addUser(UserAddRequest request) {
+        String name = request.getName();
+        if (name == null || name.isEmpty()) {
+            return ResponseEntity.badRequest().body(new UserAddResult(false, "请填写用户名称"));
+        }
+
+        name = name.trim();
+        if (name.isEmpty()) {
+            return ResponseEntity.badRequest().body(new UserAddResult(false, "用户名称不能为空"));
+        }
+        String workNum = request.getWorkNum();
+        if (workNum == null || workNum.isEmpty()) {
+            return ResponseEntity.badRequest().body(new UserAddResult(false, "请填写工号"));
+        }
+        workNum = workNum.trim();
+        if (workNum.isEmpty()) {
+            return ResponseEntity.badRequest().body(new UserAddResult(false, "工号不能为空"));
+        }
+        if (userMapper.exists(new QueryWrapper<User>().eq("work_num", workNum))) {
+            return ResponseEntity.badRequest().body(new UserAddResult(false, "工号已存在"));
+        }
+
+        String phoneNum = request.getPhoneNum();
+        if (phoneNum == null || phoneNum.isEmpty()) {
+            return ResponseEntity.badRequest().body(new UserAddResult(false, "请填写手机号"));
+        }
+        phoneNum = phoneNum.trim();
+        if (phoneNum.isEmpty()) {
+            return ResponseEntity.badRequest().body(new UserAddResult(false, "手机号不能为空"));
+        }
+        if (userMapper.exists(new QueryWrapper<User>().eq("phone_num", phoneNum))) {
+            return ResponseEntity.badRequest().body(new UserAddResult(false, "手机号已存在"));
+        }
+
+        Long departmentId = request.getDepartmentId();
+        if (departmentId == null) {
+            return ResponseEntity.badRequest().body(new UserAddResult(false, "请选择部门"));
+        }
+        if (departmentMapper.selectById(departmentId) == null) {
+            return ResponseEntity.badRequest().body(new UserAddResult(false, "部门不存在"));
+        }
+
+        String username = name;
+        if (userMapper.exists(new QueryWrapper<User>().eq("username", username))) {
+            username = username + "_" + UUID.randomUUID().toString().substring(0, 8);
+        }
+
+        User user = new User(null, username, passwordEncoder.encode(DEFAULT_PASSWORD), false, name, workNum, phoneNum, departmentId);
+        userMapper.insert(user);
+        return ResponseEntity.ok(new UserAddResult(true, "添加成功"));
     }
 }
