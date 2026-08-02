@@ -85,4 +85,8 @@ public class JwtUtil {
     public Boolean validateToken(String token) {
         return getAllClaimsFromToken(token) != null;
     }
+
+    public String getToken(String header) {
+        return header.substring(7);
+    }
 }

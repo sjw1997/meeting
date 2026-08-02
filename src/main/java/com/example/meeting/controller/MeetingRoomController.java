@@ -14,7 +14,11 @@ public class MeetingRoomController {
 
     @PostMapping("/meeting_room/add")
     public ResponseEntity<MeetingRoomAddResult> addMeetingRoom(@RequestBody MeetingRoomAddRequest request) {
-        return meetingRoomService.addMeetingRoom(request);
+        try {
+            return meetingRoomService.addMeetingRoom(request);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new MeetingRoomAddResult(false, "添加会议室失败"));
+        }
     }
 
     @GetMapping("/meeting_room/get")
@@ -24,7 +28,11 @@ public class MeetingRoomController {
 
     @PutMapping("/meeting_room/update")
     public ResponseEntity<MeetingRoomUpdateResult> updateMeetingRoom(@RequestBody MeetingRoomUpdateRequest request) {
-        return meetingRoomService.updateMeetingRoom(request);
+        try {
+            return meetingRoomService.updateMeetingRoom(request);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new MeetingRoomUpdateResult(false, "更新会议室失败"));
+        }
     }
 
     @DeleteMapping("/meeting_room/delete/{id}")

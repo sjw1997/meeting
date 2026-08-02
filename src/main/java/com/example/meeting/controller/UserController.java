@@ -1,6 +1,7 @@
 package com.example.meeting.controller;
 
 import com.example.meeting.DTO.*;
+import com.example.meeting.config.JwtUtil;
 import com.example.meeting.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @PostMapping("/register")
     public ResponseEntity<RegisterResult> register(@RequestBody RegisterRequest request) {
         return userService.register(request);
@@ -26,8 +30,7 @@ public class UserController {
 
     @PostMapping("/verifyToken")
     public ResponseEntity<VerifyTokenResult> verifyToken(@RequestHeader("Authorization") String header) {
-        String token = header.substring(7);
-        return userService.verifyToken(token);
+        return userService.verifyToken(jwtUtil.getToken(header));
     }
 
     @GetMapping("/user/getUsers")

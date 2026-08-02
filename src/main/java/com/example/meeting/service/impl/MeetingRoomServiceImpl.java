@@ -36,7 +36,7 @@ public class MeetingRoomServiceImpl implements MeetingRoomService {
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public ResponseEntity<MeetingRoomAddResult> addMeetingRoom(MeetingRoomAddRequest request) {
+    public ResponseEntity<MeetingRoomAddResult> addMeetingRoom(MeetingRoomAddRequest request) throws Exception {
         String name = request.getName();
         if (name == null) {
             return ResponseEntity.badRequest().body(new MeetingRoomAddResult(false, "请填写会议室名称"));
@@ -102,30 +102,26 @@ public class MeetingRoomServiceImpl implements MeetingRoomService {
             return ResponseEntity.badRequest().body(new MeetingRoomAddResult(false, "选择的部门不存在"));
         }
 
-        try {
-            MeetingRoom meetingRoom = new MeetingRoom(null, name, number, location, capacity, true);
-            meetingRoomMapper.insert(meetingRoom);
+        MeetingRoom meetingRoom = new MeetingRoom(null, name, number, location, capacity, true);
+        meetingRoomMapper.insert(meetingRoom);
 
-            Long meetingRoomId = meetingRoom.getId();
+        Long meetingRoomId = meetingRoom.getId();
 
-            for (Long deviceId : deviceIds) {
-                if (deviceId == null) {
-                    throw new Exception("设备ID不能为空");
-                }
-                meetingRoomDeviceRelMapper.insert(new MeetingRoomDeviceRel(null, meetingRoomId, deviceId));
+        for (Long deviceId : deviceIds) {
+            if (deviceId == null) {
+                throw new Exception("设备ID不能为空");
             }
-
-            for (Long departmentId : departmentIds) {
-                if (departmentId == null) {
-                    throw new Exception("部门ID不能为空");
-                }
-                meetingRoomDepartmentRelMapper.insert(new MeetingRoomDepartmentRel(null, meetingRoomId, departmentId));
-            }
-
-            return ResponseEntity.ok(new MeetingRoomAddResult(true, "添加会议室成功"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MeetingRoomAddResult(false, "添加会议室失败"));
+            meetingRoomDeviceRelMapper.insert(new MeetingRoomDeviceRel(null, meetingRoomId, deviceId));
         }
+
+        for (Long departmentId : departmentIds) {
+            if (departmentId == null) {
+                throw new Exception("部门ID不能为空");
+            }
+            meetingRoomDepartmentRelMapper.insert(new MeetingRoomDepartmentRel(null, meetingRoomId, departmentId));
+        }
+
+        return ResponseEntity.ok(new MeetingRoomAddResult(true, "添加会议室成功"));
     }
 
     @Override
@@ -141,8 +137,9 @@ public class MeetingRoomServiceImpl implements MeetingRoomService {
                 ResponseEntity.badRequest().body(new MeetingRoomDeleteResult(false, "删除会议室失败"));
     }
 
+    @Transactional(rollbackFor = Exception.class)
     @Override
-    public ResponseEntity<MeetingRoomUpdateResult> updateMeetingRoom(MeetingRoomUpdateRequest request) {
+    public ResponseEntity<MeetingRoomUpdateResult> updateMeetingRoom(MeetingRoomUpdateRequest request) throws Exception {
         Long id = request.getId();
         if (id == null) {
             return ResponseEntity.badRequest().body(new MeetingRoomUpdateResult(false, "请选择会议室"));
@@ -221,35 +218,31 @@ public class MeetingRoomServiceImpl implements MeetingRoomService {
             return ResponseEntity.badRequest().body(new MeetingRoomUpdateResult(false, "选择的部门不存在"));
         }
 
-        try {
-            meetingRoom.setCapacity(capacity);
-            meetingRoom.setName(name);
-            meetingRoom.setLocation(location);
-            meetingRoom.setCapacity(capacity);
-            meetingRoomMapper.updateById(meetingRoom);
+        meetingRoom.setCapacity(capacity);
+        meetingRoom.setName(name);
+        meetingRoom.setLocation(location);
+        meetingRoom.setCapacity(capacity);
+        meetingRoomMapper.updateById(meetingRoom);
 
-            Long meetingRoomId = meetingRoom.getId();
+        Long meetingRoomId = meetingRoom.getId();
 
-            meetingRoomDeviceRelMapper.delete(new QueryWrapper<MeetingRoomDeviceRel>().eq("room_id", meetingRoomId));
-            for (Long deviceId : deviceIds) {
-                if (deviceId == null) {
-                    throw new Exception("设备ID不能为空");
-                }
-                meetingRoomDeviceRelMapper.insert(new MeetingRoomDeviceRel(null, meetingRoomId, deviceId));
+        meetingRoomDeviceRelMapper.delete(new QueryWrapper<MeetingRoomDeviceRel>().eq("room_id", meetingRoomId));
+        for (Long deviceId : deviceIds) {
+            if (deviceId == null) {
+                throw new Exception("设备ID不能为空");
             }
-
-            meetingRoomDepartmentRelMapper.delete(new QueryWrapper<MeetingRoomDepartmentRel>().eq("room_id", meetingRoomId));
-            for (Long departmentId : departmentIds) {
-                if (departmentId == null) {
-                    throw new Exception("部门ID不能为空");
-                }
-                meetingRoomDepartmentRelMapper.insert(new MeetingRoomDepartmentRel(null, meetingRoomId, departmentId));
-            }
-
-            return ResponseEntity.ok(new MeetingRoomUpdateResult(true, "更新会议室成功"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new MeetingRoomUpdateResult(false, "更新会议室失败"));
+            meetingRoomDeviceRelMapper.insert(new MeetingRoomDeviceRel(null, meetingRoomId, deviceId));
         }
+
+        meetingRoomDepartmentRelMapper.delete(new QueryWrapper<MeetingRoomDepartmentRel>().eq("room_id", meetingRoomId));
+        for (Long departmentId : departmentIds) {
+            if (departmentId == null) {
+                throw new Exception("部门ID不能为空");
+            }
+            meetingRoomDepartmentRelMapper.insert(new MeetingRoomDepartmentRel(null, meetingRoomId, departmentId));
+        }
+
+        return ResponseEntity.ok(new MeetingRoomUpdateResult(true, "更新会议室成功"));
     }
 
     @Override
